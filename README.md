@@ -41,7 +41,9 @@ class CounterController extends LifecycleScreenController {
   int get counter => _counter;
 
   void increment() {
+    // Use `asyncRun` to handle loading states and errors
     asyncRun(() async {
+      await Future.delayed(const Duration(seconds: 1));
       _counter++;
       notifyListeners();
     });
