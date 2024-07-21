@@ -46,10 +46,14 @@ class LifecycleScreenState<T extends LifecycleScreenController>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    controller.routeObserver?.subscribe(
-      this,
-      ModalRoute.of(context) as PageRoute,
-    );
+    try {
+      controller.routeObserver?.subscribe(
+        this,
+        ModalRoute.of(context) as PageRoute,
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
