@@ -12,6 +12,9 @@ abstract class LifecycleScreenController extends ChangeNotifier {
   static RouteObserver<PageRoute> basePageRouteObserver =
       RouteObserver<PageRoute>();
 
+  final Map<String, Timer> _debounceTimers = {};
+  final Map<VoidCallback, Timer> _debounceCallbackTimers = {};
+
   LifecycleScreenController({
     RouteObserver<PageRoute>? routeObserver,
   }) {
@@ -39,6 +42,14 @@ abstract class LifecycleScreenController extends ChangeNotifier {
 
   void onDispose() {
     cancelSubscriptionAll();
+    for (var timer in _debounceTimers.values) {
+      timer.cancel();
+    }
+    for (var timer in _debounceCallbackTimers.values) {
+      timer.cancel();
+    }
+    _debounceTimers.clear();
+    _debounceCallbackTimers.clear();
   }
 
   void onDidPush() {}
@@ -106,5 +117,25 @@ abstract class LifecycleScreenController extends ChangeNotifier {
       await sub.cancel();
     }
     _subscriptions.clear();
+  }
+
+  void debounce(Duration duration, VoidCallback action, {String? id}) {
+    if (id != null) {
+      if (_debounceTimers.containsKey(id)) {
+        _debounceTimers[id]?.cancel();
+      }
+      _debounceTimers[id] = Timer(duration, () {
+        action();
+        _debounceTimers.remove(id);
+      });
+    } else {
+      if (_debounceCallbackTimers.containsKey(action)) {
+        _debounceCallbackTimers[action]?.cancel();
+      }
+      _debounceCallbackTimers[action] = Timer(duration, () {
+        action();
+        _debounceCallbackTimers.remove(action);
+      });
+    }
   }
 }
